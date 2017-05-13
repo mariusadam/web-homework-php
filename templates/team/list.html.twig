@@ -1,0 +1,142 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+    <div class="container">
+        <h2>Teams list</h2>
+
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#list">Teams list</a></li>
+            <li><a data-toggle="tab" href="#new">Add new team</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="list" class="tab-pane fade in active">
+                <h3>Bellow are the available teams along with their details</h3>
+                <table class="table table-hove">
+                    <thead>
+                    <tr>
+                        <th>#Id</th>
+                        <th>Name</th>
+                        <th>Played Games</th>
+                        <th>Won Games</th>
+                        <th>Lost Games</th>
+                        <th>Scored Goals</th>
+                        <th>Score</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for team in teams %}
+                        <tr>
+                            <td>{{ team.id }}</td>
+                            <td>{{ team.name }}</td>
+                            <td>{{ team.playedGames }}</td>
+                            <td>{{ team.wonGames }}</td>
+                            <td>{{ team.lostGames }}</td>
+                            <td>{{ team.scoredGoals }}</td>
+                            <td>{{ team.score }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="new" class="tab-pane fade">
+                <h3>Add a new team to the database</h3>
+                <div id="football_team_form_wrapper">
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        function formAjax(formName) {
+            var previousId;
+
+            $('#' + formName + '_id').on('focus', function (e) {
+                previousId = this.value;
+            }).change(function () {
+                var id = this.value;
+                if (!id) {
+                    return;
+                }
+                // do a get to retrieve team
+                $.ajax({
+                    url: teamUrl(id),
+                    error: function (req, text, err) {
+                        console.log(req);
+                        console.log(text);
+                        console.log(err);
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        if (data.success == true) {
+                            populateForm(formName, data.team);
+                        } else {
+                            alert('Error occurred ' + data.msg);
+                        }
+                    },
+                    type: 'GET'
+                });
+            })
+        }
+
+        function teamUrl(id) {
+            return '{{ path('get_team', {teamId : 0}) }}' + id;
+        }
+
+        function postFormAjax(formName) {
+            $('form[name="' + formName + '"]').submit(function (e) {
+                e.preventDefault();
+
+                // populate create form
+                $.ajax({
+                    url: '{{ path('new_team') }}',
+                    error: function (req, text, err) {
+                        console.log(req);
+                        console.log(text);
+                        console.log(err);
+                    },
+                    data: $(this).serialize(),
+                    success: function (data) {
+                        $('#' + formName + '_wrapper')
+                            .empty()
+                            .append(data);
+                        formAjax(formName);
+                        postFormAjax(formName);
+                    },
+                    type: 'POST'
+                });
+            });
+        }
+
+        function getFormAjax(formName) {
+            // populate create form
+            $.ajax({
+                url: '{{ path('new_team') }}',
+                error: function (req, text, err) {
+                    console.log(req);
+                    console.log(text);
+                    console.log(err);
+                },
+                success: function (data) {
+                    $('#' + formName + '_wrapper').append(data);
+                    formAjax(formName);
+                    postFormAjax(formName);
+                },
+                type: 'GET'
+            });
+        }
+
+        $(document).ready(function () {
+            var formName = 'football_team_form';
+
+            getFormAjax(formName);
+        });
+
+    </script>
+{% endblock %}
