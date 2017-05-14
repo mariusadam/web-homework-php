@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\FootballTeam;
 use App\Repository\FootballTeamRepository;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -67,8 +68,7 @@ class FootballTeamForm extends AbstractType
                 ->add('wonGames', IntegerType::class)
                 ->add('lostGames', IntegerType::class)
                 ->add('scoredGoals', IntegerType::class)
-                ->add('score', NumberType::class)
-                ->add('save', SubmitType::class);
+                ->add('score', NumberType::class);
     }
 
     /**

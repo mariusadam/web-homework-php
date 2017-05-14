@@ -156,4 +156,9 @@ class FootballTeam extends Entity
     {
         $this->score = $score;
     }
+
+    public function __toString()
+    {
+        return "Football team";
+    }
 }

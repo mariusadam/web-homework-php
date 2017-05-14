@@ -12,7 +12,8 @@
         <div class="tab-content">
             <div id="list" class="tab-pane fade in active">
                 <h3>Bellow are the available teams along with their details</h3>
-                <table class="table table-hove">
+                <div id="football_team_list_messages"></div>
+                <table class="table table-hover table-bordered" id="list-teams-table">
                     <thead>
                     <tr>
                         <th>#Id</th>
@@ -22,20 +23,21 @@
                         <th>Lost Games</th>
                         <th>Scored Goals</th>
                         <th>Score</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for team in teams %}
-                        <tr>
-                            <td>{{ team.id }}</td>
-                            <td>{{ team.name }}</td>
-                            <td>{{ team.playedGames }}</td>
-                            <td>{{ team.wonGames }}</td>
-                            <td>{{ team.lostGames }}</td>
-                            <td>{{ team.scoredGoals }}</td>
-                            <td>{{ team.score }}</td>
-                        </tr>
-                    {% endfor %}
+                    {#{% for team in teams %}#}
+                    {#<tr>#}
+                    {#<td>{{ team.id }}</td>#}
+                    {#<td>{{ team.name }}</td>#}
+                    {#<td>{{ team.playedGames }}</td>#}
+                    {#<td>{{ team.wonGames }}</td>#}
+                    {#<td>{{ team.lostGames }}</td>#}
+                    {#<td>{{ team.scoredGoals }}</td>#}
+                    {#<td>{{ team.score }}</td>#}
+                    {#</tr>#}
+                    {#{% endfor %}#}
                     </tbody>
                 </table>
             </div>
@@ -43,23 +45,45 @@
             <div id="new" class="tab-pane fade">
                 <h3>Add a new team to the database</h3>
                 <div id="football_team_form_wrapper">
-
+                    {{ render(path('new_team')) }}
                 </div>
             </div>
         </div>
 
+        <!-- Delete confirmation Modal -->
+        <div id="football_team_delete_modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Delete Confirmation
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete team with id <span id="team_to_delete_it"></span> ?
+                    </div>
+                    <div class="modal-footer">
+                        <button id="football_team_cancel_delete_btn" type="button" class="btn btn-info"
+                                data-dismiss="modal">Cancel
+                        </button>
+                        <button id="football_team_confirm_delete_btn" type="button" class="btn btn-danger"
+                                data-dismiss="modal">Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
 {% block js %}
     <script>
-        function formAjax(formName) {
+        function getTeamAjax(formName) {
             var previousId;
 
             $('#' + formName + '_id').on('focus', function (e) {
                 previousId = this.value;
             }).change(function () {
                 var id = this.value;
+                console.log(id);
                 if (!id) {
                     return;
                 }
@@ -74,10 +98,13 @@
                     dataType: 'json',
                     success: function (data) {
                         console.log(data);
-                        if (data.success == true) {
+                        if (data.type == 'success') {
                             populateForm(formName, data.team);
                         } else {
-                            alert('Error occurred ' + data.msg);
+                            writeMessage('football_team_form_messages', data.type, data.msg);
+                            $('#football_team_form_id').find('option[value=' + id + ']').remove();
+                            // remove id form select
+                            resetForm('football_team_form');
                         }
                     },
                     type: 'GET'
@@ -106,11 +133,17 @@
                         $('#' + formName + '_wrapper')
                             .empty()
                             .append(data);
-                        formAjax(formName);
-                        postFormAjax(formName);
+                        initializeBindings(formName);
                     },
                     type: 'POST'
                 });
+            });
+        }
+
+        function bindResetButton() {
+            $('#football_team_reset_btn').click(function (e) {
+                e.preventDefault();
+                resetForm('football_team_form');
             });
         }
 
@@ -124,19 +157,98 @@
                     console.log(err);
                 },
                 success: function (data) {
-                    $('#' + formName + '_wrapper').append(data);
-                    formAjax(formName);
-                    postFormAjax(formName);
+                    $('#' + formName + '_wrapper').empty().append(data);
+                    initializeBindings(formName);
                 },
                 type: 'GET'
             });
         }
 
-        $(document).ready(function () {
-            var formName = 'football_team_form';
+        function getAllTeams() {
+            // populate create form
+            $.ajax({
+                url: '{{ path('get_teams') }}',
+                error: function (req, text, err) {
+                    console.log(req);
+                    console.log(text);
+                    console.log(err);
+                },
+                success: function (data) {
+                    if (data.success) {
+                        populateTeamsTable('list-teams-table', data.teams);
+                    } else {
+                        // TODO alert messages
+                        console.log(data);
+                    }
+                },
+                type: 'GET'
+            });
+        }
 
-            getFormAjax(formName);
+
+        function formDeleteHandler(type, msg, deletedId) {
+            writeMessage('football_team_form_messages', type, msg);
+            if (type == 'success') {
+                $('#football_team_form_id').find('option[value=' + deletedId + ']').remove();
+                // remove id form select
+                resetForm('football_team_form');
+            }
+        }
+
+        function bindFormDeleteBtn() {
+            var $btn = $('#football_team_delete_btn');
+            var $teamIdElement = $('#football_team_form_id');
+            $btn.click(function (e) {
+                e.preventDefault();
+                if (!$teamIdElement.val()) {
+                    formDeleteHandler('danger', 'You have not selected and id.');
+                    return;
+                }
+
+                $('#team_to_delete_it')
+                    .empty()
+                    .append($teamIdElement.val());
+                $('#football_team_delete_modal').modal();
+
+                deleteTeamAjax(formDeleteHandler, $teamIdElement.val());
+            });
+        }
+
+        function deleteTeamAjax(successHandler, teamId) {
+            var $confirmBtn = $('#football_team_confirm_delete_btn');
+            // remove any previous events
+            $confirmBtn.off();
+            $confirmBtn.click(function (e) {
+                $.ajax({
+                    url: '/teams/' + teamId,
+                    error: function (req, text, err) {
+                        console.log(req);
+                        console.log(text);
+                        console.log(err);
+                    },
+                    success: function (data) {
+                        successHandler(data.type, data.msg, teamId);
+                    },
+                    type: 'DELETE'
+                });
+            });
+        }
+
+        function initializeBindings(teamFormName) {
+            postFormAjax(teamFormName);
+            getTeamAjax(teamFormName);
+            getAllTeams();
+            bindFormDeleteBtn();
+            bindResetButton();
+        }
+
+        $(document).ready(function () {
+            var teamFormName = 'football_team_form';
+
+            initializeBindings(teamFormName);
         });
+
+
 
     </script>
 {% endblock %}

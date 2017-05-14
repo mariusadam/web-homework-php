@@ -5,6 +5,7 @@ namespace App\Controller;
 use Silex\Application;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 
 /**
@@ -70,5 +71,13 @@ class Controller
     protected function getUrlGenerator()
     {
         return $this->app['url_generator'];
+    }
+
+    /**
+     * @return Session
+     */
+    protected function getSession()
+    {
+        return $this->get('session');
     }
 }

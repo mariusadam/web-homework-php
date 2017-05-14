@@ -1,3 +1,22 @@
 {% form_theme form 'bootstrap_3_horizontal_layout.html.twig' %}
 
-{{ form(form, {'attr' : {'novalidate' : 'novalidate'}}) }}
+<div id="football_team_form_messages">
+    {% if result is not empty %}
+        <div class="alert alert-{{ result.type }} alert-dismissable fade in">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>{{ result.type | capitalize }}!</strong> {{ result.msg }}
+        </div>
+    {% endif %}
+</div>
+
+{{ form_start(form, {'attr' : {'novalidate' : 'novalidate'}}) }}
+  {{ form_widget(form) }}
+
+<div class="row">
+    <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" value="save" class="btn btn-success">Save</button>
+        <button id="football_team_delete_btn" type="reset" value="delete" class="btn btn-danger team-delete-btn">Delete</button>
+        <button id="football_team_reset_btn" type="reset" value="reset" class="btn btn-primary">Reset</button>
+    </div>
+</div>
+{{ form_end(form) }}

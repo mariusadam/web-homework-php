@@ -20,6 +20,16 @@ class EntityMapper
     private static $entitiesProperties = [];
 
     /**
+     * @param $entity
+     *
+     * @return array
+     */
+    public static function toArrayKeepCase($entity)
+    {
+        return self::toArray($entity, false);
+    }
+
+    /**
      * @param      $entity
      * @param bool $changeCase
      *

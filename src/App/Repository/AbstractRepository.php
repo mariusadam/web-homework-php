@@ -4,8 +4,8 @@ namespace App\Repository;
 
 use App\Services\EntityBuilder;
 use App\Services\EntityMapper;
-use App\Services\Utils;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 
 /**
@@ -64,8 +64,9 @@ class AbstractRepository
 
         $rows = $stmt->fetchAll();
         if (count($rows) != 1) {
+            $e = new $this->entityClass();
             throw new \Exception(
-                "Could not fond one {$this->entityClass} with id {$id}."
+                "Could not find one {$e} with id {$id}."
             );
         }
 
@@ -92,17 +93,21 @@ class AbstractRepository
      */
     public function delete($entity)
     {
-        $id = null;
         if (is_numeric($entity)) {
             $id = $entity;
         } else {
             $id = $entity->{'getId'}();
         }
 
-        return $this->connection->delete(
+        $affectedRows = $this->connection->delete(
             $this->getEntityTable(),
             ['id' => $id]
         );
+
+        if ($affectedRows < 1) {
+            $e = new $this->entityClass();
+            throw new Exception("Could not delete {$e} with id {$id}");
+        }
     }
 
     /**

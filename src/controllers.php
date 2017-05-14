@@ -34,9 +34,15 @@ $app->get('/teams-rankings', IndexController::class.':teamRankingsAction')->bind
 $app->get('/teams/list', TeamController::class.':listAction')->bind('list_teams');
 
 $app->get('/teams/{teamId}', TeamController::class.':getTeamAction')
-    ->bind('get_team')
-    ->assert('teamId', '\d+');
+    ->assert('teamId', '\d+')
+    ->bind('get_team');
 
 $app->match('/teams/new', TeamController::class.':newTeamAction')
     ->method('GET|POST')
     ->bind('new_team');
+
+$app->get('/teams', TeamController::class.':getTeamsAction')->bind('get_teams');
+
+$app->delete('/teams/{teamId}', TeamController::class.':deleteTeamAction')
+    ->assert('teamId', '\d+')
+    ->bind('delete_team');

@@ -14,6 +14,7 @@ use Silex\Provider\FormServiceProvider;
 use Silex\Provider\HttpFragmentServiceProvider;
 use Silex\Provider\LocaleServiceProvider;
 use Silex\Provider\ServiceControllerServiceProvider;
+use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\ValidatorServiceProvider;
 use Symfony\Component\Validator\Mapping\Factory\LazyLoadingMetadataFactory;
@@ -25,6 +26,7 @@ $app->register(new AssetServiceProvider());
 $app->register(new TwigServiceProvider());
 $app->register(new HttpFragmentServiceProvider());
 $app->register(new FormServiceProvider());
+$app->register(new SessionServiceProvider());
 $app->register(new ValidatorServiceProvider());
 $app['validator.mapping.class_metadata_factory'] = function ($app) {
     $loader = new AnnotationLoader(new AnnotationReader());
