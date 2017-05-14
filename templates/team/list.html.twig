@@ -76,6 +76,42 @@
 
 {% block js %}
     <script>
+        function bindFormButtons(formName) {
+            $(':input', 'form[name="' + formName + '"]')
+                .bind('keyup change', function (e) {
+                    if (this.id == formName + '_id') {
+                        return;
+                    }
+                    $('#football_team_submit_btn').removeAttr('disabled');
+                });
+        }
+
+        function trySaveBeforeReload(formName, previousId, onModalClose) {
+            if ($('#football_team_submit_btn').attr('disabled') == 'disabled') {
+                // no modifications so do not ask to save
+                onModalClose();
+                return;
+            }
+
+            $('#football_team_confirm_save_btn').click(function () {
+//                var $idElement = $('#' + formName + '_id');
+//                var currentId = $idElement.val();
+                var formValues = $('form[name="' + formName + '"]').serializeArray();
+                for (var i = 0; i < formValues.length; i++) {
+                    if (formValues[i].name == formName + '[id]') {
+                        formValues[i].value = previousId;
+                        break;
+                    }
+                }
+
+                saveTeamAjax(formName, $.param(formValues));
+            });
+
+            var $confirmModal = $('#football_team_save_modal');
+            $confirmModal.on("hidden.bs.modal", onModalClose);
+            $confirmModal.modal();
+        }
+
         function getTeamAjax(formName) {
             var previousId;
 
@@ -85,29 +121,33 @@
                 var id = this.value;
                 console.log(id);
                 if (!id) {
+                    $('#football_team_submit_btn').attr('disabled', false);
                     return;
                 }
-                // do a get to retrieve team
-                $.ajax({
-                    url: teamUrl(id),
-                    error: function (req, text, err) {
-                        console.log(req);
-                        console.log(text);
-                        console.log(err);
-                    },
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log(data);
-                        if (data.type == 'success') {
-                            populateForm(formName, data.team);
-                        } else {
-                            writeMessage('football_team_form_messages', data.type, data.msg);
-                            $('#football_team_form_id').find('option[value=' + id + ']').remove();
-                            // remove id form select
-                            resetForm('football_team_form');
-                        }
-                    },
-                    type: 'GET'
+                trySaveBeforeReload(formName, previousId, function () {
+                    // do a get to retrieve team
+                    $.ajax({
+                        url: teamUrl(id),
+                        error: function (req, text, err) {
+                            console.log(req);
+                            console.log(text);
+                            console.log(err);
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            console.log(data);
+                            if (data.type == 'success') {
+                                populateForm(formName, data.team);
+                                $('#football_team_submit_btn').attr('disabled', true);
+                            } else {
+                                writeMessage('football_team_form_messages', data.type, data.msg);
+                                $('#football_team_form_id').find('option[value=' + id + ']').remove();
+                                // remove id form select
+                                resetForm('football_team_form');
+                            }
+                        },
+                        type: 'GET'
+                    });
                 });
             })
         }
@@ -116,27 +156,30 @@
             return '{{ path('get_team', {teamId : 0}) }}' + id;
         }
 
+        function saveTeamAjax(formName, formData) {
+            // populate create form
+            $.ajax({
+                url: '{{ path('new_team') }}',
+                error: function (req, text, err) {
+                    console.log(req);
+                    console.log(text);
+                    console.log(err);
+                },
+                data: formData,
+                success: function (data) {
+                    $('#' + formName + '_wrapper')
+                        .empty()
+                        .append(data);
+                    initializeBindings(formName);
+                },
+                type: 'POST'
+            });
+        }
+
         function postFormAjax(formName) {
             $('form[name="' + formName + '"]').submit(function (e) {
                 e.preventDefault();
-
-                // populate create form
-                $.ajax({
-                    url: '{{ path('new_team') }}',
-                    error: function (req, text, err) {
-                        console.log(req);
-                        console.log(text);
-                        console.log(err);
-                    },
-                    data: $(this).serialize(),
-                    success: function (data) {
-                        $('#' + formName + '_wrapper')
-                            .empty()
-                            .append(data);
-                        initializeBindings(formName);
-                    },
-                    type: 'POST'
-                });
+                saveTeamAjax(formName, $(this).serialize());
             });
         }
 
@@ -240,6 +283,7 @@
             getAllTeams();
             bindFormDeleteBtn();
             bindResetButton();
+            bindFormButtons(teamFormName)
         }
 
         $(document).ready(function () {
@@ -247,7 +291,6 @@
 
             initializeBindings(teamFormName);
         });
-
 
 
     </script>

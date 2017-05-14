@@ -1,6 +1,6 @@
 function populateForm(formId, entity) {
     for (var property in entity) {
-        if (!entity.hasOwnProperty(property) || property == 'id') {
+        if (!entity.hasOwnProperty(property)) {
             continue;
         }
         // console.log(property);

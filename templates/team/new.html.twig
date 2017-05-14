@@ -14,9 +14,30 @@
 
 <div class="row">
     <div class="col-sm-offset-2 col-sm-10">
-        <button type="submit" value="save" class="btn btn-success">Save</button>
+        <button id="football_team_submit_btn" disabled="disabled" type="submit" value="save" class="btn btn-success">Save</button>
         <button id="football_team_delete_btn" type="reset" value="delete" class="btn btn-danger team-delete-btn">Delete</button>
         <button id="football_team_reset_btn" type="reset" value="reset" class="btn btn-primary">Reset</button>
     </div>
 </div>
 {{ form_end(form) }}
+
+<!-- Save confirmation Modal -->
+<div id="football_team_save_modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Save Confirmation
+            </div>
+            <div class="modal-body">
+                You have unsaved changes, do you wish to save ? <span id="team_to_delete_it"></span> ?
+            </div>
+            <div class="modal-footer">
+                <button id="football_team_donnot_save_btn" type="button" class="btn btn-info"
+                        data-dismiss="modal">Don't save
+                </button>
+                <button id="football_team_confirm_save_btn" type="button" class="btn btn-success"
+                        data-dismiss="modal">Save
+                </button>
+            </div>
+        </div>
+    </div>
