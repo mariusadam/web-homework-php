@@ -7,8 +7,7 @@ function populateForm(formId, entity) {
         $('#' + formId + '_' + property).val(entity[property]);
     }
 }
-
-function populateTeamsTable(tableId, entities) {
+    function populateTeamsTable(tableId, entities) {
     var $tbody = $('#' + tableId).find('tbody').empty();
 
     function getRowId(entityId) {

@@ -124,6 +124,8 @@
                     $('#football_team_submit_btn').attr('disabled', false);
                     return;
                 }
+                //TODO change this so that only asks to discard changes
+                // and not try to save because it will cause chaos
                 trySaveBeforeReload(formName, previousId, function () {
                     // do a get to retrieve team
                     $.ajax({
