@@ -115,12 +115,8 @@ class AbstractRepository
      */
     public function getAll(): array
     {
-        $toEntity = function ($row) {
-            return $this->entityBuilder->build($row, $this->entityClass);
-        };
-
         return array_map(
-            $toEntity,
+            [$this, 'toEntity'],
             $this->connection
                 ->createQueryBuilder()
                 ->select('*')
@@ -144,6 +140,15 @@ class AbstractRepository
         $ids = array_column($ids, 'id');
 
         return array_combine($ids, $ids);
+    }
+
+    protected function toEntity($row)
+    {
+        if (empty($row)) {
+            return null;
+        }
+        return $this->entityBuilder->build($row, $this->entityClass);
+
     }
 
     /**

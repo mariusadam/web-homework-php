@@ -1,0 +1,34 @@
+<table class="table table-hover table-bordered" id="list-teams-table">
+    <thead>
+    <tr>
+        <th>#Id</th>
+        <th>Role</th>
+        <th>Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Age</th>
+        <th>Web page</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+        <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.role }}</td>
+            <td>{{ u.name }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.age }}</td>
+            <td>{{ u.email }}</td>
+            <td><a target="_blank" href="{{ u.webPage }}">{{ u.webPage }}</a></td>
+            <td>
+                {% if user.isAdmin %}
+                    <a href="{{ path('edit_user', {'id' : u.id, 'username':u.username}) }}" class="btn btn-info">Edit</a>
+                {% endif %}
+                <a href="{{ path('profile_user', {'id' : u.id, 'username':u.username}) }}" class="btn btn-info">View
+                    profile</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -2,6 +2,7 @@
 
 use App\Controller\IndexController;
 use App\Controller\TeamController;
+use App\Controller\UserController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -46,3 +47,28 @@ $app->get('/teams', TeamController::class.':getTeamsAction')->bind('get_teams');
 $app->delete('/teams/{teamId}', TeamController::class.':deleteTeamAction')
     ->assert('teamId', '\d+')
     ->bind('delete_team');
+
+$app->get('/homepage', UserController::class.':homepageAction')
+    ->bind('homepage_user');
+
+$app->match('/users/new', UserController::class.':newAction')
+    ->method('GET|POST')
+    ->bind('new_user');
+
+$app->match('/login', UserController::class.':loginAction')
+    ->method('GET|POST')
+    ->bind('login_user');
+
+$app->get('/users/search', UserController::class.':searchAction')
+    ->bind('search_user');
+
+$app->get('/logout', UserController::class.':logoutAction')
+    ->bind('logout_user');
+
+$app->get('/users/edit/{username}-{id}', UserController::class.':editAction')
+    ->assert('id', '\d+')
+    ->bind('edit_user');
+
+$app->get('/users/profile/{username}-{id}', UserController::class.':profileAction')
+    ->assert('id', '\d+')
+    ->bind('profile_user');

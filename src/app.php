@@ -2,8 +2,11 @@
 
 use App\Controller\IndexController;
 use App\Controller\TeamController;
+use App\Controller\UserController;
 use App\Form\FootballTeamForm;
+use App\Form\UserForm;
 use App\Repository\FootballTeamRepository;
+use App\Repository\UserRepository;
 use App\Services\EntityBuilder;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Silex\Application;
@@ -62,6 +65,7 @@ $app['twig'] = $app->extend('twig', function ($twig, $app) {
 $controllers = [
     IndexController::class,
     TeamController::class,
+    UserController::class,
 ];
 
 foreach ($controllers as $controllerClass) {
@@ -81,13 +85,24 @@ $app[FootballTeamRepository::class] = function () use ($app) {
     );
 };
 
+$app[UserRepository::class] = function () use ($app) {
+    return new UserRepository(
+        $app['db'], $app[EntityBuilder::class]
+    );
+};
+
 $app[FootballTeamForm::class] = function ($app) {
     $url = $app['url_generator']->generate('new_team');
 
     return new FootballTeamForm($app[FootballTeamRepository::class], $url);
 };
+$app[UserForm::class] = function () {
+    return new UserForm();
+};
+
 $app->extend('form.types', function ($types) use ($app) {
     $types[] = FootballTeamForm::class;
+    $types[] = UserForm::class;
 
     return $types;
 });

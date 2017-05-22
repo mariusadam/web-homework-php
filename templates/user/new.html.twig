@@ -1,0 +1,26 @@
+{% form_theme form 'bootstrap_3_horizontal_layout.html.twig' %}
+
+<div id="notices">
+    {% for message in app.session.getFlashBag.get('error') %}
+        <div class="alert alert-danger col-sm-12">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.session.getFlashBag.get('success') %}
+        <div class="alert alert-success col-sm-12">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+
+{{ form_start(form, {'attr' : {'novalidate' : 'novalidate'}}) }}
+  {{ form_widget(form) }}
+
+<div class="row">
+    <div class="col-sm-offset-2 col-sm-10">
+        <button id="user_submit_btn" type="submit" value="save" class="btn btn-success">Save
+        </button>
+        <button id="user_reset_btn" type="reset" value="reset" class="btn btn-primary">Reset</button>
+    </div>
+</div>
+{{ form_end(form) }}

@@ -43,6 +43,10 @@ class EntityBuilder
                 $value = $this->build($value, $this->getEntityClass($property));
                 $property = str_replace('_id', '', $property);
             }
+            if (strpos($property, '_json') !== false) {
+                $value = $this->buildArray($value, $this->getEntityClass($property, '_json'));
+                $property = str_replace('_json', '', $property);
+            }
             $setter = 'set'.Utils::snakeToPascalCase($property);
             $entity->{$setter}($value);
         }
@@ -50,10 +54,27 @@ class EntityBuilder
         return $entity;
     }
 
-    protected function getEntityClass($referencedName)
+    private function getEntityClass($referencedName, $suffix = '_id')
     {
-        $shortName = str_replace('_id', '', $referencedName);
+        $shortName = str_replace($suffix, '', $referencedName);
 
         return self::ENTITY_NAMESPACE.Utils::snakeToPascalCase($shortName);
+    }
+
+    /**
+     * @param $value
+     * @param $entityClass
+     *
+     * @return array
+     */
+    private function buildArray($value, $entityClass)
+    {
+        $result = [];
+        $value = json_decode($value, true);
+        foreach ($value as $v) {
+            $result[] = new $entityClass($v);
+        }
+
+        return $result;
     }
 }

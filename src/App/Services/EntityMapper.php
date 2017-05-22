@@ -54,6 +54,12 @@ class EntityMapper
                 $value = $value->getId();
                 $key = "${$key}_id";
             }
+
+            if (is_array($value)) {
+                $value = json_encode($value);
+                $key = "${$key}_json";
+            }
+
             $entityData[$key] = $value;
         }
 
