@@ -72,3 +72,7 @@ $app->get('/users/edit/{username}-{id}', UserController::class.':editAction')
 $app->get('/users/profile/{username}-{id}', UserController::class.':profileAction')
     ->assert('id', '\d+')
     ->bind('profile_user');
+
+$app->delete('/users/delete/{username}-{id}', UserController::class.':deleteAction')
+    ->assert('id', '\d+')
+    ->bind('delete_user');

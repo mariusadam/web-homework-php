@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Form\UserForm;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,15 +17,44 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class UserController extends Controller
 {
+    public function editAction(Request $request, $id)
+    {
+        $form = $this->formFactory()->create(UserForm::class);
+        try {
+            $user = $this->getUserRepository()->findBy($id);
+            $form->setData($user);
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                /** @var User $user */
+                $user = $form->getData();
+                $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
+                $this
+                    ->getUserRepository()
+                    ->save($user);
+                $this->addFlashSuccess('User successfully updated');
+            }
+        } catch (Exception $e) {
+            $this->addFlashError($e->getMessage());
+        }
+
+        return $this->render('user/new.html.twig', [
+            'form' => $form->createView(),
+            'user' => $this->getUser(),
+        ]);
+    }
+
     public function newAction(Request $request)
     {
         $form = $this->formFactory()->create(UserForm::class);
         try {
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
+                /** @var User $user */
+                $user = $form->getData();
+                $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
                 $this
                     ->getUserRepository()
-                    ->save($form->getData());
+                    ->save($user);
                 $this->addFlashSuccess('User successfully added');
             }
         } catch (Exception $e) {
@@ -40,7 +70,9 @@ class UserController extends Controller
     public function homepageAction()
     {
         if ($this->getUser() === null) {
-            $this->addFlashError('You need to login first');
+            $date = new \DateTime();
+            $date = $date->format('Y-m-d H:i:s');
+            $this->addFlashError('You need to login first'.$date);
 
             return $this->redirect('login_user');
         }
@@ -98,13 +130,31 @@ class UserController extends Controller
         ]);
     }
 
-    public function editAction()
+    public function profileAction($id)
     {
+        try {
+            $editedUser = $this->getUserRepository()->findBy($id);
+        } catch (Exception $e) {
+            $this->addFlashError($e->getMessage());
+            $editedUser = null;
+        }
 
+        return $this->render('user/profile.html.twig', [
+            'edited_user' => $editedUser
+        ]);
     }
 
-    public function profileAction()
+    public function deleteAction($id)
     {
+        try {
+            $this->getUserRepository()->delete($id);
+            $result['success'] = true;
+            $result['id'] = $id;
+        } catch (\Exception $e) {
+            $result['success'] = false;
+            $result['msg'] = $e->getMessage();
+        }
 
+        return $this->json($result);
     }
 }

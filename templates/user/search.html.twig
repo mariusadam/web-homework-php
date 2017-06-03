@@ -1,34 +1,87 @@
-<table class="table table-hover table-bordered" id="list-teams-table">
-    <thead>
-    <tr>
-        <th>#Id</th>
-        <th>Role</th>
-        <th>Name</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Age</th>
-        <th>Web page</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for u in users %}
+<div>
+    <div id="search-messages">
+
+    </div>
+    <table class="table table-hover table-bordered" id="list-teams-table">
+        <thead>
         <tr>
-            <td>{{ u.id }}</td>
-            <td>{{ u.role }}</td>
-            <td>{{ u.name }}</td>
-            <td>{{ u.username }}</td>
-            <td>{{ u.age }}</td>
-            <td>{{ u.email }}</td>
-            <td><a target="_blank" href="{{ u.webPage }}">{{ u.webPage }}</a></td>
-            <td>
-                {% if user.isAdmin %}
-                    <a href="{{ path('edit_user', {'id' : u.id, 'username':u.username}) }}" class="btn btn-info">Edit</a>
-                {% endif %}
-                <a href="{{ path('profile_user', {'id' : u.id, 'username':u.username}) }}" class="btn btn-info">View
-                    profile</a>
-            </td>
+            <th>#Id</th>
+            <th>Role</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Age</th>
+            <th>Web page</th>
+            <th>Action</th>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        {% for u in users %}
+            <tr id="users-row-{{ u.id }}">
+                <td>{{ u.id }}</td>
+                <td>{{ u.role }}</td>
+                <td>{{ u.name }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.age }}</td>
+                <td>{{ u.email }}</td>
+                <td><a target="_blank" href="{{ u.webPage }}">{{ u.webPage }}</a></td>
+                <td>
+                    {% if user.isAdmin %}
+                        <a id="{{ u.id }}" href="{{ path('edit_user', {'id' : u.id, 'username':u.username}) }}"
+                           class="btn btn-success">Edit</a>
+                        <a id="{{ u.id }}" href="{{ path('delete_user', {'id' : u.id, 'username':u.username}) }}"
+                           class="delete-user btn btn-danger">Delete</a>
+                    {% endif %}
+                    <a id="{{ u.id }}" href="{{ path('profile_user', {'id' : u.id, 'username':u.username}) }}"
+                       class="user-profile btn btn-info">Profile</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('.delete-user').click(function (e) {
+            e.preventDefault();
+            var userId = $(this)[0].id;
+            $.ajax({
+                url: $(this).attr('href'),
+                error: function (req, text, err) {
+                    console.log(req);
+                    console.log(text);
+                    console.log(err);
+                },
+                success: function (data) {
+                    if (data.success == false) {
+                        writeMessage('search-messages', 'danger', data.msg)
+                    } else {
+                        var rowIdSelector = '#users-row-' + userId;
+                        writeMessage('search-message', 'success', 'User with id ' + userId + ' deleted.');
+                        $(rowIdSelector).fadeOut(1000, function () {
+                            $(this).remove();
+                        });
+                    }
+                },
+                type: 'DELETE'
+            });
+        });
+
+        $('.user-profile').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: this.href,
+                error: function (req, text, err) {
+                    console.log(req);
+                    console.log(text);
+                    console.log(err);
+                },
+                success: function (data) {
+                    $('#content-wrapper').empty().append(data);
+                },
+                type: 'GET'
+            });
+        });
+    });
+</script>
